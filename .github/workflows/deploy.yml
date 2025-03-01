@@ -1,0 +1,25 @@
+name: Deploy to Server via SSH and Cloudflare
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install cloudflared
+        run: |
+          curl -L https://pkg.cloudflare.com/cloudflared-amd64.deb -o cloudflared.deb
+          sudo dpkg -i cloudflared.deb
+          sudo apt-get install -f
+
+      - name: SSH into Server via Cloudflared Tunnel
+        run: |
+          ssh -o ProxyCommand="cloudflared access ssh --hostname %h" yair@ssh.yairserver.uk << 'EOF'
+            echo "Connected to server via Cloudflared"
+            cd /home/yair/projects/whatsbot
+            git pull origin main
+          EOF

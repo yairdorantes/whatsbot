@@ -1,6 +1,8 @@
 import { Client } from "whatsapp-web.js";
 import puppeteer from "puppeteer-core";
 
+process.loadEnvFile();
+
 const client = new Client({
   puppeteer: {
     executablePath: puppeteer.executablePath(), // Use the correct executable path
@@ -48,11 +50,10 @@ process.env.TZ = "America/Mexico_City";
 
 // dotenv.config();
 // const apiKey = process.env.WEATHER_API_KEY;
-const apiKey = "b607f392868a5c978ac4b5445a558a68";
+const apiKey = process.env.WEATHER_API_KEY;
 // const apiUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${19.2883}&lon=${-99.6672}&appid=${apiKey}`;
-
 const apiUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${19.2883}&lon=${-99.6672}&appid=${apiKey}`;
-console.log(apiUrl);
+
 const getWeather = async () => {
   try {
     const res = await axios.get(apiUrl);
