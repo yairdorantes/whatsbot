@@ -12,7 +12,7 @@ jobs:
 
       - name: Install cloudflared
         run: |
-          curl -L https://pkg.cloudflare.com/cloudflared-amd64.deb -o cloudflared.deb
+          curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -o cloudflared.deb
           sudo dpkg -i cloudflared.deb
           sudo apt-get install -f
 
