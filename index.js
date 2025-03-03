@@ -1,6 +1,6 @@
 import { Client } from "whatsapp-web.js";
 import puppeteer from "puppeteer-core";
-
+// test from github
 process.loadEnvFile();
 
 const client = new Client({
