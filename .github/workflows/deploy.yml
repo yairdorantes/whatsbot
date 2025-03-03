@@ -2,7 +2,9 @@ name: Simple POST Request
 
 on:
   # Trigger manually or adjust as needed
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   make-post-request:
