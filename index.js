@@ -34,7 +34,7 @@ client.on("message", (msg) => {
     msg.reply("pong");
   }
 });
-
+// test
 client.initialize();
 
 process.env.TZ = "America/Mexico_City";
