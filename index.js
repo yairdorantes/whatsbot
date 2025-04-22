@@ -20,6 +20,10 @@ import axios from "axios";
 // import dotenv from "dotenv";
 import { scheduleJob } from "node-schedule";
 
+import app from "./webhook.js";
+
+const PORT = process.env.PORT || 3000;
+
 client.on("qr", (qr) => {
   qrcode.generate(qr, { small: true });
 });
@@ -91,3 +95,9 @@ export const sendWeather = async (callback = null) => {
 // console.log(printWeather());
 
 // 0 0 7 * * *
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Webhook server listening on port ${PORT}`);
+});
+
+export default client;
