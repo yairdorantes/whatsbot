@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set variables
-PROJECT_DIR="/home/yair/whatsbot/whatsbot"
+PROJECT_DIR="/home/yair/projects/whatsapp-bot/whatsbot"
 DOCKER_IMAGE_NAME="whatsapp_bot"
 DOCKER_CONTAINER_NAME="whatsapp_bot"
 DOCKER_PORT="3000"
