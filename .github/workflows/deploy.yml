@@ -12,4 +12,4 @@ jobs:
     steps:
       - name: Make POST Request
         run: |
-          curl -X POST https://webhook.yairserver.uk/webhook
+          curl -X POST https://webhook.yairserver.uk/webhoo
