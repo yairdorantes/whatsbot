@@ -3,7 +3,7 @@ name: Deploy via Webhook
 on:
   push:
     branches:
-      - back
+      - main
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -14,5 +14,3 @@ jobs:
           curl -X POST https://webhook.yairserver.uk/deploy \
             -H "Content-Type: application/json" \
             -d '{"target_path": "/home/yair/projects/whatsapp-bot/whatsbot/deploy.sh"}'
-
-# co
