@@ -1,15 +1,16 @@
-name: Simple POST Request
+name: Deploy via Webhook
 
 on:
-  # Trigger manually or adjust as needed
   push:
     branches:
-      - main
-
+      - back
 jobs:
-  make-post-request:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Make POST Request
+      - name: Send POST request to deployment endpoint
         run: |
-          curl -X POST https://webhook.yairserver.uk/webhoo
+          curl -X POST https://webhook.yairserver.uk/deploy \
+            -H "Content-Type: application/json" \
+            -d '{"target_path": "/home/yair/projects/whatsapp-bot/whatsbot/deploy.sh"}'
