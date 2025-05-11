@@ -11,6 +11,4 @@ jobs:
     steps:
       - name: Send POST request to deployment endpoint
         run: |
-          curl -X POST https://webhook.yairserver.uk/deploy \
-            -H "Content-Type: application/json" \
-            -d '{"target_path": "/home/yair/projects/whatsapp-bot/whatsbot/deploy.sh"}'
+          curl -X POST https://webhook.yairserver.uk/deploy/?project_id=2

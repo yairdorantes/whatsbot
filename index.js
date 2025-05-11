@@ -1,31 +1,41 @@
-import { Client } from "whatsapp-web.js";
-import puppeteer from "puppeteer-core";
-// test from github
-process.loadEnvFile();
+import pkg from "whatsapp-web.js";
+const { Client, LocalAuth } = pkg;
+import puppeteer from "puppeteer";
 
-const client = new Client({
-  puppeteer: {
-    executablePath: puppeteer.executablePath(), // Use the correct executable path
-    headless: true, // Make sure it runs headless in the Docker container
-    args: [
-      "--no-sandbox", // Important for Docker environments
-      "--disable-setuid-sandbox",
-      "--disable-accelerated-2d-canvas", // Disable 2D canvas acceleration
-      "--disable-gpu", // Disable GPU usage if there's an issue with rendering
-    ],
-  },
-});
 import qrcode from "qrcode-terminal";
 import axios from "axios";
 // import dotenv from "dotenv";
 import { scheduleJob } from "node-schedule";
 
 import app from "./webhook.js";
+// test from github
+process.loadEnvFile();
+
+const client = new Client({
+  authStrategy: new LocalAuth(),
+  puppeteer: {
+    handleSIGINT: false,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  },
+});
 
 const PORT = process.env.PORT || 3000;
 
+process.on("SIGINT", async () => {
+  console.log("(SIGINT) Shutting down...");
+  await client.destroy();
+  console.log("client destroyed");
+  process.exit(0);
+});
+
 client.on("qr", (qr) => {
   qrcode.generate(qr, { small: true });
+});
+client.on("authenticated", () => {
+  console.log("Client is authenticated!");
+});
+client.on("auth_failure", (msg) => {
+  console.error("Authentication failure:", msg);
 });
 
 client.on("ready", () => {

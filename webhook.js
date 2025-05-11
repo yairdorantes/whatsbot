@@ -13,4 +13,15 @@ app.post("/webhook", (req, res) => {
   res.status(200).send("Webhook received!");
 });
 
+app.post("/whatsapp", (req, res) => {
+  const { destiny, msg } = req.body;
+  try {
+    client.sendMessage(`521${destiny}@c.us`, msg);
+    res.status(200).send("success sending whatsapp message!");
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("something went wrong sending the message");
+  }
+});
+
 export default app;
