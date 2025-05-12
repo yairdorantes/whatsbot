@@ -1,14 +1,11 @@
 import pkg from "whatsapp-web.js";
 const { Client, LocalAuth } = pkg;
 import puppeteer from "puppeteer";
-
 import qrcode from "qrcode-terminal";
 import axios from "axios";
-// import dotenv from "dotenv";
 import { scheduleJob } from "node-schedule";
-
 import app from "./webhook.js";
-// test from github
+
 process.loadEnvFile();
 
 const client = new Client({
@@ -18,8 +15,9 @@ const client = new Client({
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   },
 });
-// nicek
+
 const PORT = process.env.PORT || 3000;
+const WEATHER_DESTINY = process.env.WEATHER_DESTINY;
 
 process.on("SIGINT", async () => {
   console.log("(SIGINT) Shutting down...");
@@ -40,7 +38,6 @@ client.on("auth_failure", (msg) => {
 
 client.on("ready", () => {
   console.log("Client is ready!");
-  sendWeather();
 });
 
 client.on("message", (msg) => {
@@ -85,31 +82,26 @@ const getWeather = async () => {
     console.log(err);
   }
 };
-const currentHour = new Date().getHours();
 
-export const sendWeather = async (callback = null) => {
-  console.log(`Current hour: ${currentHour}`);
-  const jobMorning = scheduleJob("0 0 7 * * *", async function () {
-    const weather = await getWeather();
-    // callback(
-    //   "5217293255577-1621863748@g.us",
-    //   `¡Buenos días a todos! Les comparto el pronóstico del clima para hoy: ${weather}. Que tengan un excelente dia 😊`
-    // );
-    client.sendMessage("5217293737947@c.us", weather);
-    // console.log("the weather is: ", weather);
-  });
-  // console.log(jobMorning.name);
+export const sendWeather = async (destiny) => {
+  const weather = await getWeather();
+  client.sendMessage(`521${destiny}@c.us`, weather);
 };
 
-// printWeather();
-// console.log(printWeather());
-
-// 0 0 7 * * *
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Webhook server listening on port ${PORT}`);
+scheduleJob("0 0 7 * * *", async function () {
+  // 0 0 7 * * *
+  sendWeather(WEATHER_DESTINY);
 });
 
-export default client;
+scheduleJob("0 0 13 * * *", async function () {
+  // 0 0 7 * * *
+  sendWeather(WEATHER_DESTINY);
+});
 
-// jaaj
+const currentHour = new Date().getHours();
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Webhook server listening on port ${PORT} at ${currentHour}`);
+  console.log(WEATHER_DESTINY);
+});
+export default client;
