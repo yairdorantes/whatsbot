@@ -16,6 +16,7 @@ const client = new Client({
   },
 });
 
+let botJournal = [];
 const PORT = process.env.PORT || 3000;
 const WEATHER_DESTINY = process.env.WEATHER_DESTINY;
 const HOST = process.env.HOST;
@@ -42,6 +43,9 @@ client.on("ready", () => {
 });
 
 client.on("message", async (msg) => {
+  const journalResult = handleBotJournal(msg);
+  console.log(botJournal);
+
   const userMessage = msg.body.trim();
   if (msg.body == "!ping") {
     await msg.reply("pong");
@@ -49,12 +53,16 @@ client.on("message", async (msg) => {
   }
   // console.log(msg, "***************");
   if (!activeWABot) return;
+  if (journalResult.messages > 2) return;
   try {
     const AIResponse = await AIChatResponse(userMessage);
-    await msg.reply(`${AIResponse} - *_Respuesta generada por IA 🤖_*`);
+    await msg.reply(`${AIResponse} - *_Atte: Asistente de Yair 🤖_*`);
   } catch (err) {
     console.error("Error getting AI response:", err);
   }
+});
+client.on("message_create", (msg) => {
+  msg.fromMe && handleBotJournal(msg);
 });
 
 client.initialize();
@@ -170,7 +178,7 @@ const AIChatResponse = async (message) => {
           {
             role: "system",
             content:
-              "Actúa como un asistente amigable y profesional en un bot de WhatsApp, representándome a mí, Yair. Responde a los mensajes entrantes de manera cálida, natural y en el mismo idioma del usuario (en este caso, español). Hazle saber al usuario que su mensaje ha sido recibido y que será leído pronto, sin prometer tiempos específicos. Usa un tono cercano, pero respetuoso, adaptándote al contexto del mensaje recibido. Si el mensaje es breve o informal, responde de forma breve y casual; si es más formal o detallado, usa un tono ligeramente más profesional. Evita respuestas genéricas y personaliza la respuesta según el contenido del mensaje, pero mantén la idea central de que el mensaje será atendido pronto. No uses emojis en exceso, pero incluye alguno si el tono del usuario lo amerita. 😊",
+              "Actúa como un asistente virtual que representa a Yair en su WhatsApp personal. No eres un bot formal, sino alguien que responde como si fuera Yair: buena onda, relajado, con sentido del humor cuando se puede, pero siempre respetuoso. Tu objetivo es responder a los mensajes entrantes de forma cálida, respetuosa y natural, reflejando la personalidad de alguien accesible y atento. Sigue estas instrucciones: Detecta el tono del mensaje recibido (informal, casual, formal, urgente, emocional, etc.). Responde en español y en el mismo estilo del usuario: Si el mensaje es breve o informal, responde de manera breve, casual y cercana. Confirma que el mensaje ha sido recibido y que Yair lo leerá pronto, sin prometer tiempos específicos. Personaliza la respuesta según el contenido del mensaje. Evita respuestas genéricas o plantillas evidentes. No respondas directamente el contenido del mensaje, solo da una confirmación amigable y acorde al contexto. Puedes usar emojis con moderación, solo si el tono del usuario lo sugiere.",
           },
           {
             role: "user",
@@ -215,11 +223,46 @@ app.get("/WABot", (req, res) => {
   activeWABot = !activeWABot;
   res.status(200).send(`change received!, now: ${activeWABot}`);
 });
+const handleBotJournal = (msg) => {
+  const today = new Date();
+  const currentDate = today.toLocaleDateString("es-MX");
+
+  let phoneTarget = msg.id.fromMe ? msg.to : msg.from;
+
+  const match = phoneTarget.match(/(\d{10})(?=@)/);
+  if (!match) return; // Invalid phone format
+
+  phoneTarget = match[1]; // Extracted 10-digit phone
+
+  let contact = botJournal.find((item) => item.phone === phoneTarget);
+
+  if (contact) {
+    if (contact.lastMessageDate === currentDate) {
+      if (msg.id.fromMe) {
+        contact.messages = 2; // If I replied, stop further bot replies
+      } else {
+        contact.messages += 1; // Count the incoming message
+      }
+    } else {
+      // New day: reset counter and count this new message
+      contact.messages = msg.id.fromMe ? 2 : 1;
+      contact.lastMessageDate = currentDate;
+    }
+    return contact;
+  } else {
+    // New contact
+    const newContact = {
+      phone: phoneTarget,
+      messages: msg.id.fromMe ? 2 : 1,
+      lastMessageDate: currentDate,
+    };
+    botJournal.push(newContact);
+    return newContact;
+  }
+};
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Webhook server listening on port ${PORT} at ${currentHour}`);
   console.log(WEATHER_DESTINY);
 });
 export default client;
-
-// a
