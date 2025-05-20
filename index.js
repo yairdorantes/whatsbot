@@ -20,6 +20,7 @@ let botJournal = [];
 const PORT = process.env.PORT || 3000;
 const WEATHER_DESTINY = process.env.WEATHER_DESTINY;
 const HOST = process.env.HOST;
+console.log("host", HOST);
 let activeWABot = true;
 process.on("SIGINT", async () => {
   console.log("(SIGINT) Shutting down...");
