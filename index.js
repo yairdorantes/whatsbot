@@ -107,7 +107,7 @@ export const sendWeather = async (destiny) => {
   try {
     const weather = await getWeather(); // e.g., "It's sunny and 25°C"
     const AIWeather = await AIWeatherResult(weather); // e.g., "🌞 It's a bright day!"
-    await client.sendMessage(`521${destiny}@c.us`, AIWeather);
+    // await client.sendMessage(`521${destiny}@c.us`, AIWeather);
     console.log(`Weather message sent to 521${destiny}@c.us`);
   } catch (error) {
     console.error("Failed to send weather update:", error.message);
@@ -115,7 +115,7 @@ export const sendWeather = async (destiny) => {
 };
 
 const AIWeatherResult = async (weather) => {
-  const prompt = `You are a WhatsApp bot designed to provide friendly and concise weather updates. Write a warm, engaging message to inform users about the current weather conditions: ${weather}. Include relevant emojis (e.g., 🌧 for rain, 🌡 for temperature) and ensure the tone is casual and approachable.`;
+  const prompt = `You're a friendly WhatsApp bot. Briefly describe the current weather: ${weather}. Use a casual tone, include 1–3 emojis, and keep the message under 40 words.`;
 
   try {
     const response = await axios.post(
@@ -267,5 +267,3 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(WEATHER_DESTINY);
 });
 export default client;
-
-// jjakk
