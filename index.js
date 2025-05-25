@@ -107,7 +107,7 @@ export const sendWeather = async (destiny) => {
   try {
     const weather = await getWeather(); // e.g., "It's sunny and 25°C"
     const AIWeather = await AIWeatherResult(weather); // e.g., "🌞 It's a bright day!"
-    // await client.sendMessage(`521${destiny}@c.us`, AIWeather);
+    await client.sendMessage(`521${destiny}@c.us`, AIWeather);
     console.log(`Weather message sent to 521${destiny}@c.us`);
   } catch (error) {
     console.error("Failed to send weather update:", error.message);
