@@ -25,6 +25,6 @@ docker build -t $DOCKER_IMAGE_NAME .
 docker rm -f $DOCKER_CONTAINER_NAME || true
 
 # Run the Docker container
-docker run -d -p $DOCKER_PORT:$DOCKER_PORT --restart unless-stopped --name $DOCKER_CONTAINER_NAME $DOCKER_IMAGE_NAME
+docker run -d --add-host=host.docker.internal:host-gateway  -p $DOCKER_PORT:$DOCKER_PORT --restart unless-stopped --name $DOCKER_CONTAINER_NAME $DOCKER_IMAGE_NAME
 
 echo "Deploy done! :)"
