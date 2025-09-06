@@ -47,20 +47,36 @@ client.on("message", async (msg) => {
   const journalResult = handleBotJournal(msg);
   console.log(botJournal);
 
-  const userMessage = msg.body.trim();
+  // const userMessage = msg.body.trim();
   if (msg.body == "!ping") {
     await msg.reply("pong");
     return;
   }
-  // console.log(msg, "***************");
-  if (!activeWABot) return;
-  if (journalResult.messages > 2) return;
-  try {
-    const AIResponse = await AIChatResponse(userMessage);
-    await msg.reply(`${AIResponse} - *_Atte: Asistente de Yair 🤖_*`);
-  } catch (err) {
-    console.error("Error getting AI response:", err);
+
+  if (msg.body.toLocaleLowerCase().includes("summarize")) {
+    try {
+      const yt_url = msg.links[0].link;
+
+      const summary = await axios.post("http://192.168.1.9:8001/summarize", {
+        yt_url: yt_url,
+      });
+
+      // console.log(summary, summary.data);
+
+      await msg.reply(summary.data);
+    } catch (error) {
+      console.error("Error summarizing video:", error);
+    }
   }
+  // console.log(msg, "***************");
+  // if (!activeWABot) return;
+  // if (journalResult.messages > 2) return;
+  // try {
+  //   const AIResponse = await AIChatResponse(userMessage);
+  //   await msg.reply(`${AIResponse} - *_Atte: Asistente de Yair 🤖_*`);
+  // } catch (err) {
+  //   console.error("Error getting AI response:", err);
+  // }
 });
 client.on("message_create", (msg) => {
   msg.fromMe && handleBotJournal(msg);
@@ -264,6 +280,6 @@ const handleBotJournal = (msg) => {
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Webhook server listening on port ${PORT} at ${currentHour}`);
-  console.log(WEATHER_DESTINY);
+  console.log("weather destiny:", WEATHER_DESTINY);
 });
 export default client;
