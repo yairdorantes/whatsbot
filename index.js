@@ -19,8 +19,7 @@ const client = new Client({
 let botJournal = [];
 const PORT = process.env.PORT || 3000;
 const WEATHER_DESTINY = process.env.WEATHER_DESTINY;
-const HOST = process.env.HOST;
-console.log("host", HOST);
+const HOST = "http://host.docker.internal";
 let activeWABot = true;
 process.on("SIGINT", async () => {
   console.log("(SIGINT) Shutting down...");
@@ -57,7 +56,7 @@ client.on("message", async (msg) => {
     try {
       const yt_url = msg.links[0].link;
 
-      const summary = await axios.post("http://192.168.1.9:8001/summarize", {
+      const summary = await axios.post(`${HOST}:8001/summarize`, {
         yt_url: yt_url,
       });
 
@@ -135,7 +134,7 @@ const AIWeatherResult = async (weather) => {
 
   try {
     const response = await axios.post(
-      `http://${HOST}:11434/api/generate`,
+      `${HOST}:11434/api/generate`,
       {
         model: "dolphin3:latest",
         prompt,
@@ -188,7 +187,7 @@ const currentHour = new Date().getHours();
 const AIChatResponse = async (message) => {
   try {
     const response = await axios.post(
-      `http://${HOST}:11434/api/chat`,
+      `${HOST}:11434/api/chat`,
       {
         model: "dolphin3:latest",
         messages: [
