@@ -20,6 +20,7 @@ let botJournal = [];
 const PORT = process.env.PORT || 3000;
 const WEATHER_DESTINY = process.env.WEATHER_DESTINY;
 const HOST = "http://host.docker.internal";
+// const HOST = "http://192.168.1.14";
 let activeWABot = true;
 process.on("SIGINT", async () => {
   console.log("(SIGINT) Shutting down...");
@@ -51,20 +52,27 @@ client.on("message", async (msg) => {
     await msg.reply("pong");
     return;
   }
+  const msgContent = msg.body.toLocaleLowerCase();
+  let lang = "es";
 
-  if (msg.body.toLocaleLowerCase().includes("summarize")) {
+  if (msgContent.includes("summarize")) {
+    if (msgContent.includes("in english")) {
+      lang = "en";
+    }
     try {
       const yt_url = msg.links[0].link;
 
       const summary = await axios.post(`${HOST}:8001/summarize`, {
         yt_url: yt_url,
+        lang: lang,
       });
 
       // console.log(summary, summary.data);
 
-      await msg.reply(summary.data);
+      await msg.reply(summary.data.summary);
     } catch (error) {
       console.error("Error summarizing video:", error);
+      await msg.reply("Sorry, I couldn't summarize the video.");
     }
   }
   // console.log(msg, "***************");
