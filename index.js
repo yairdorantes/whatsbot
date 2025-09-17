@@ -62,7 +62,7 @@ client.on("message", async (msg) => {
     try {
       const yt_url = msg.links[0].link;
 
-      const summary = await axios.post(`${HOST}:8001/summarize`, {
+      const summary = await axios.post(`${HOST}:8002/summarize`, {
         yt_url: yt_url,
         lang: lang,
       });
