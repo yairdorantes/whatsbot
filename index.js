@@ -1,5 +1,6 @@
 import pkg from "whatsapp-web.js";
-const { Client, LocalAuth } = pkg;
+const { Client, LocalAuth, MessageMedia } = pkg;
+
 import puppeteer from "puppeteer";
 import qrcode from "qrcode-terminal";
 import axios from "axios";
@@ -19,8 +20,8 @@ const client = new Client({
 let botJournal = [];
 const PORT = process.env.PORT || 3000;
 const WEATHER_DESTINY = process.env.WEATHER_DESTINY;
-const HOST = "http://host.docker.internal";
-// const HOST = "http://192.168.1.14";
+// const HOST = "http://host.docker.internal";
+const HOST = "http://pc.local";
 let activeWABot = true;
 process.on("SIGINT", async () => {
   console.log("(SIGINT) Shutting down...");
@@ -45,7 +46,6 @@ client.on("ready", () => {
 
 client.on("message", async (msg) => {
   const journalResult = handleBotJournal(msg);
-  console.log(botJournal);
 
   // const userMessage = msg.body.trim();
   if (msg.body == "!ping") {
@@ -62,28 +62,21 @@ client.on("message", async (msg) => {
     try {
       const yt_url = msg.links[0].link;
 
-      const summary = await axios.post(`${HOST}:8002/summarize`, {
+      const summary = await axios.post(`${HOST}:8001/summarize`, {
         yt_url: yt_url,
         lang: lang,
       });
+      const media = await MessageMedia.fromUrl(summary.data.thumbnail);
 
       // console.log(summary, summary.data);
-
-      await msg.reply(summary.data.summary);
+      await client.sendMessage(msg.from, media, {
+        caption: `*${summary.data.title}*\n${summary.data.summary}`,
+      });
     } catch (error) {
       console.error("Error summarizing video:", error);
       await msg.reply("Sorry, I couldn't summarize the video.");
     }
   }
-  // console.log(msg, "***************");
-  // if (!activeWABot) return;
-  // if (journalResult.messages > 2) return;
-  // try {
-  //   const AIResponse = await AIChatResponse(userMessage);
-  //   await msg.reply(`${AIResponse} - *_Atte: Asistente de Yair 🤖_*`);
-  // } catch (err) {
-  //   console.error("Error getting AI response:", err);
-  // }
 });
 client.on("message_create", (msg) => {
   msg.fromMe && handleBotJournal(msg);
@@ -104,144 +97,8 @@ process.env.TZ = "America/Mexico_City";
 
 // dotenv.config();
 // const apiKey = process.env.WEATHER_API_KEY;
-const apiKey = process.env.WEATHER_API_KEY;
-// const apiUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${19.2883}&lon=${-99.6672}&appid=${apiKey}`;
-const apiUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${19.2883}&lon=${-99.6672}&appid=${apiKey}`;
-
-const getWeather = async () => {
-  try {
-    const res = await axios.get(apiUrl);
-    const weatherData = res.data;
-    const dailyWeather = weatherData.daily[0]; // Assuming you want the first day (index 0)
-    const averageTemperature =
-      "🌡️ " +
-      ((dailyWeather.temp.max + dailyWeather.temp.min) / 2 - 273.15).toFixed(2);
-    const weatherDescription = dailyWeather.weather[0].description;
-    const precipitationProbability =
-      "🌧️ " + (dailyWeather.pop * 100).toFixed(2);
-    const weatherText = `${weatherDescription}, ${precipitationProbability}%, ${averageTemperature}°C`;
-    return weatherText;
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-export const sendWeather = async (destiny) => {
-  try {
-    const weather = await getWeather(); // e.g., "It's sunny and 25°C"
-    const AIWeather = await AIWeatherResult(weather); // e.g., "🌞 It's a bright day!"
-    await client.sendMessage(`521${destiny}@c.us`, AIWeather);
-    console.log(`Weather message sent to 521${destiny}@c.us`);
-  } catch (error) {
-    console.error("Failed to send weather update:", error.message);
-  }
-};
-
-const AIWeatherResult = async (weather) => {
-  const prompt = `You're a friendly WhatsApp bot. Briefly describe the current weather: ${weather}. Use a casual tone, include 1–3 emojis, and keep the message under 40 words.`;
-
-  try {
-    const response = await axios.post(
-      `${HOST}:11434/api/generate`,
-      {
-        model: "dolphin3:latest",
-        prompt,
-        stream: true,
-      },
-      {
-        responseType: "stream",
-      }
-    );
-
-    let result = "";
-
-    response.data.on("data", (chunk) => {
-      const lines = chunk.toString().split("\n").filter(Boolean);
-      for (const line of lines) {
-        try {
-          const json = JSON.parse(line);
-          if (json.response) {
-            result += json.response;
-            // process.stdout.write(json.response); // Optional: live print
-          }
-        } catch (err) {
-          console.error("Invalid JSON chunk:", line);
-        }
-      }
-    });
-
-    return await new Promise((resolve) => {
-      response.data.on("end", () => {
-        resolve(result);
-      });
-    });
-  } catch (err) {
-    console.error("Error:", err.message);
-    return "Error generating AI weather response.";
-  }
-};
-scheduleJob("0 0 7 * * *", async function () {
-  // 0 0 7 * * *
-  sendWeather(WEATHER_DESTINY);
-});
-
-scheduleJob("0 0 13 * * *", async function () {
-  // 0 0 7 * * *
-  sendWeather(WEATHER_DESTINY);
-});
 
 const currentHour = new Date().getHours();
-
-const AIChatResponse = async (message) => {
-  try {
-    const response = await axios.post(
-      `${HOST}:11434/api/chat`,
-      {
-        model: "dolphin3:latest",
-        messages: [
-          {
-            role: "system",
-            content:
-              "Actúa como un asistente virtual que representa a Yair en su WhatsApp personal. No eres un bot formal, sino alguien que responde como si fuera Yair: buena onda, relajado, con sentido del humor cuando se puede, pero siempre respetuoso. Tu objetivo es responder a los mensajes entrantes de forma cálida, respetuosa y natural, reflejando la personalidad de alguien accesible y atento. Sigue estas instrucciones: Detecta el tono del mensaje recibido (informal, casual, formal, urgente, emocional, etc.). Responde en español y en el mismo estilo del usuario: Si el mensaje es breve o informal, responde de manera breve, casual y cercana. Confirma que el mensaje ha sido recibido y que Yair lo leerá pronto, sin prometer tiempos específicos. Personaliza la respuesta según el contenido del mensaje. Evita respuestas genéricas o plantillas evidentes. No respondas directamente el contenido del mensaje, solo da una confirmación amigable y acorde al contexto. Puedes usar emojis con moderación, solo si el tono del usuario lo sugiere.",
-          },
-          {
-            role: "user",
-            content: message,
-          },
-        ],
-      },
-      {
-        responseType: "stream",
-      }
-    );
-
-    let result = "";
-
-    response.data.on("data", (chunk) => {
-      const lines = chunk.toString().split("\n").filter(Boolean);
-      for (const line of lines) {
-        try {
-          const json = JSON.parse(line);
-          if (json.message && json.message.content) {
-            result += json.message.content;
-            // process.stdout.write(json.message.content); // Optional: live print
-          }
-        } catch (err) {
-          console.error("Invalid JSON chunk:", line);
-        }
-      }
-    });
-
-    return await new Promise((resolve) => {
-      response.data.on("end", () => {
-        resolve(result);
-      });
-    });
-  } catch (err) {
-    console.error("Error:", err.message);
-    return "Error generating AI chat response.";
-  }
-};
 
 app.get("/WABot", (req, res) => {
   activeWABot = !activeWABot;
