@@ -20,8 +20,8 @@ const client = new Client({
 let botJournal = [];
 const PORT = process.env.PORT || 3000;
 const WEATHER_DESTINY = process.env.WEATHER_DESTINY;
-// const HOST = "http://host.docker.internal";
-const HOST = "http://pc.local";
+const HOST = "http://host.docker.internal";
+// const HOST = "http://192.168.1.14";
 let activeWABot = true;
 process.on("SIGINT", async () => {
   console.log("(SIGINT) Shutting down...");
@@ -62,7 +62,7 @@ client.on("message", async (msg) => {
     try {
       const yt_url = msg.links[0].link;
 
-      const summary = await axios.post(`${HOST}:8001/summarize`, {
+      const summary = await axios.post(`${HOST}:8002/summarize`, {
         yt_url: yt_url,
         lang: lang,
       });
